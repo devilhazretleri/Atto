@@ -385,7 +385,79 @@ def handle_arama(message):
         last_usage[user_id] = datetime.now()
     except Exception:
         bot.send_message(message.chat.id, "⚠️ Lütfen geçerli bir telefon numarası girin. Örnek: /arama +905555555555", parse_mode="Markdown")
+        
+@bot.message_handler(commands=['sorgu'])
+def kimlik_sorgu(message):
+    try:
+        chat_id = message.chat.id
+        parameters = ' '.join(message.text.split()[1:]).split('-')[1:]
+        query = {}
 
+        for param in parameters:
+            key_value = param.split(maxsplit=1)
+            if len(key_value) == 2:
+                key, value = key_value
+                key = key.strip().lower()
+                query[key] = value.strip()
+
+        if 'ilce' in query:
+            url = f"http://api.hexnox.pro/sowixapi/adsoyadilice.php?ad={query.get('ad', '')}&soyad={query.get('soyad', '')}&il={query.get('il', '')}&ilce={query.get('ilce', '')}"
+        elif 'il' in query:
+            url = f"http://api.hexnox.pro/sowixapi/adsoyadilce.php?ad={query.get('ad', '')}&soyad={query.get('soyad', '')}&il={query.get('il', '')}"
+        elif 'ad' in query and 'soyad' in query:
+            url = f"http://api.hexnox.pro/sowixapi/adsoyadilce.php?ad={query.get('ad', '')}&soyad={query.get('soyad', '')}"
+        else:
+            bot.reply_to(message, "*⚠️ Geçersiz komut kullanım.!.\nÖrnek:* `/sorgu -ad abdulselam -soyad deniz -il istanbul -ilce büyükçekmece`\n*Eğer kişi 2 ismi varsa Örnek: -ad azat+can diğer herşey aynı*", parse_mode="Markdown")
+            return
+
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'
+        }
+        response = requests.get(url, headers=headers)
+
+        if response.status_code == 200:
+            response_text = response.content.decode('utf-8-sig')
+            result = json.loads(response_text)
+            total_results = len(result['data'])
+
+            if total_results == 0:
+                bot.send_message(chat_id, "🔍 Hiç sonuç bulunamadı.")
+                return
+
+            formatted_message = f"🔍 Toplam: {total_results} Kişi\n\n"
+            for person in result['data']:
+                formatted_message += (
+                    f"╭━━━━━━━━━━━━━━\n"
+                    f"┃➥ TC: {person.get('TC', 'Bilinmiyor')}\n"
+                    f"┃➥ AD: {person.get('ADI', 'Bilinmiyor')}\n"
+                    f"┃➥ SOYAD: {person.get('SOYADI', 'Bilinmiyor')}\n"
+                    f"┃➥ DOĞUM TARİHİ: {person.get('DOGUMTARIHI', 'Bilinmiyor')}\n"
+                    f"┃➥ İL: {person.get('NUFUSIL', 'Bilinmiyor')}\n"
+                    f"┃➥ İLÇE: {person.get('NUFUSILCE', 'Bilinmiyor')}\n"
+                    f"┃➥ ANNE ADI: {person.get('ANNEADI', 'Bilinmiyor')}\n"
+                    f"┃➥ ANNE TC: {person.get('ANNETC', 'Bilinmiyor')}\n"
+                    f"┃➥ BABA ADI: {person.get('BABAADI', 'Bilinmiyor')}\n"
+                    f"┃➥ BABA TC: {person.get('BABATC', 'Bilinmiyor')}\n"
+                    f"┃➥ UYRUK: {person.get('UYRUK', 'Bilinmiyor')}\n"
+                    f"╰━━━━━━━━━━━━━━\n\n"
+                )
+
+            if len(formatted_message) > 4000:
+                file_path = "adsoyadsorgu.txt"
+                with open(file_path, 'w', encoding='utf-8') as f:
+                    f.write(formatted_message)
+
+                with open(file_path, 'rb') as f:
+                    bot.send_document(chat_id, f)
+                os.remove(file_path)
+            else:
+                send_long_message(chat_id, formatted_message)
+
+        else:
+            bot.reply_to(message, "⚠️ API yanıtı alınamadı.")
+    except Exception as e:
+        bot.reply_to(message, f"⚠️ Bir hata oluştu: {str(e)}")
+                
 # --- /ip --- #
 IP_REGEX = re.compile(r'^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$')
 @bot.message_handler(commands=['ip'])
