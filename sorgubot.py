@@ -385,6 +385,7 @@ def handle_arama(message):
         last_usage[user_id] = datetime.now()
     except Exception:
         bot.send_message(message.chat.id, "⚠️ Lütfen geçerli bir telefon numarası girin. Örnek: /arama +905555555555", parse_mode="Markdown")
+        
  def temiz_deger(val):
     if val is None or str(val).strip() == "" or str(val).strip().lower() == "none":
         return "Bilinmiyor"
