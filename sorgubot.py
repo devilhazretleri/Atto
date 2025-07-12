@@ -27,7 +27,6 @@ def start(message):
 ➤ /sulale - T.C.'den sülale bilgisi verir
 ➤ /es - T.C.'den eş sorgu
 ➤ /cocuk - T.C.'den çocuk sorgu
-➤ /adresi - T.C.'den adres (detaylı)
 ➤ /adres - T.C.'den adres (kısa)
 ➤ /tcpro - T.C.'den detaylı bilgi
 ➤ /medeni - Medeni hal sorgu
@@ -114,36 +113,41 @@ def sulale_sorgu(message):
     tc = args[1]
     url = f'https://api.hexnox.pro/sowixapi/sulale.php?tc={tc}'
     try:
-        resp = requests.get(url, timeout=10)
+        resp = requests.get(url, timeout=20)
         result = resp.json()
-        # result doğrudan liste olabilir!
+        # Hem doğrudan liste hem dict-data desteklenir
         if isinstance(result, list) and len(result) > 0:
             members = result
-            msg = f"🔍 Toplam sülale üyesi: {len(members)}\n\n"
-            for m in members:
-                msg += (
-                    f"YAKINLIK: {m.get('YAKINLIK', '-')}\n"
-                    f"TC: {m.get('TC', '-')}\n"
-                    f"AD: {m.get('AD', '-')}\n"
-                    f"SOYAD: {m.get('SOYAD', '-')}\n\n"
-                )
-            send_long_message(chat_id, msg)
         elif isinstance(result, dict) and "data" in result and isinstance(result["data"], list) and len(result["data"]) > 0:
             members = result["data"]
-            msg = f"🔍 Toplam sülale üyesi: {len(members)}\n\n"
-            for m in members:
-                msg += (
-                    f"YAKINLIK: {m.get('YAKINLIK', '-')}\n"
-                    f"TC: {m.get('TC', '-')}\n"
-                    f"AD: {m.get('AD', '-')}\n"
-                    f"SOYAD: {m.get('SOYAD', '-')}\n\n"
-                )
-            send_long_message(chat_id, msg)
         else:
             bot.send_message(chat_id, "❌ Sülale bilgisi bulunamadı.")
+            return
+
+        # TXT dosyasını oluştur
+        txt_content = f"Toplam sülale üyesi: {len(members)}\n\n"
+        for m in members:
+            txt_content += (
+                f"YAKINLIK: {m.get('YAKINLIK', '-')}\n"
+                f"TC: {m.get('TC', '-')}\n"
+                f"AD: {m.get('AD', '-')}\n"
+                f"SOYAD: {m.get('SOYAD', '-')}\n\n"
+            )
+
+        # Dosyaya yaz
+        file_path = "sulale.txt"
+        with open(file_path, "w", encoding="utf-8") as f:
+            f.write(txt_content)
+
+        # Dosyayı Telegram ile gönder
+        with open(file_path, "rb") as f:
+            bot.send_document(chat_id, f, caption="Sülale sorgu sonucu")
+
+        # Dosyayı sil
+        os.remove(file_path)
     except Exception as e:
         bot.send_message(chat_id, f"Hata oluştu: {e}")
-
+        
 # /tcpro
 @bot.message_handler(commands=['tcpro'])
 def tcpro_sorgu(message):
