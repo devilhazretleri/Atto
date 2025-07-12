@@ -116,75 +116,33 @@ def sulale_sorgu(message):
     try:
         resp = requests.get(url, timeout=10)
         result = resp.json()
-        if not result.get("success") or not isinstance(result.get("data"), list):
+        # result doğrudan liste olabilir!
+        if isinstance(result, list) and len(result) > 0:
+            members = result
+            msg = f"🔍 Toplam sülale üyesi: {len(members)}\n\n"
+            for m in members:
+                msg += (
+                    f"YAKINLIK: {m.get('YAKINLIK', '-')}\n"
+                    f"TC: {m.get('TC', '-')}\n"
+                    f"AD: {m.get('AD', '-')}\n"
+                    f"SOYAD: {m.get('SOYAD', '-')}\n\n"
+                )
+            send_long_message(chat_id, msg)
+        elif isinstance(result, dict) and "data" in result and isinstance(result["data"], list) and len(result["data"]) > 0:
+            members = result["data"]
+            msg = f"🔍 Toplam sülale üyesi: {len(members)}\n\n"
+            for m in members:
+                msg += (
+                    f"YAKINLIK: {m.get('YAKINLIK', '-')}\n"
+                    f"TC: {m.get('TC', '-')}\n"
+                    f"AD: {m.get('AD', '-')}\n"
+                    f"SOYAD: {m.get('SOYAD', '-')}\n\n"
+                )
+            send_long_message(chat_id, msg)
+        else:
             bot.send_message(chat_id, "❌ Sülale bilgisi bulunamadı.")
-            return
-        members = result["data"]
-        msg = f"🔍 Toplam sülale üyesi: {len(members)}\n\n"
-        for m in members:
-            msg += (
-                f"YAKINLIK: {m.get('YAKINLIK', '-')}\n"
-                f"TC: {m.get('TC', '-')}\n"
-                f"AD: {m.get('AD', '-')}\n"
-                f"SOYAD: {m.get('SOYAD', '-')}\n\n"
-            )
-        send_long_message(chat_id, msg)
     except Exception as e:
         bot.send_message(chat_id, f"Hata oluştu: {e}")
-
-# /adresi (detaylı adres)
-@bot.message_handler(commands=['adresi'])
-def adresi_sorgu(message):
-    chat_id = message.chat.id
-    args = message.text.split()
-    if len(args) != 2:
-        bot.send_message(chat_id, "⚠️ TC Kimlik Numarası girin:\n/adresi 11111111110", parse_mode="Markdown")
-        return
-    tc = args[1]
-    url = f"https://api.hexnox.pro/sowixapi/adres.php?tc={tc}"
-    try:
-        resp = requests.get(url)
-        data = resp.json()
-        if data.get("success"):
-            adres = data["data"]
-            msg = (
-                f"TC: {adres.get('TC', '-')}\n"
-                f"Ad Soyad: {adres.get('AdSoyad', '-')}\n"
-                f"Doğum Yeri: {adres.get('DogumYeri', '-')}\n"
-                f"Vergi No: {adres.get('VergiNumarasi', '-')}\n"
-                f"İkametgah: {adres.get('Ikametgah', '-')}\n"
-            )
-            bot.send_message(chat_id, msg)
-        else:
-            bot.send_message(chat_id, "Adres bilgisi bulunamadı.")
-    except Exception as e:
-        bot.send_message(chat_id, f"API hatası: {e}")
-
-# /adres (kısa)
-@bot.message_handler(commands=['adres'])
-def adres_sorgu(message):
-    chat_id = message.chat.id
-    args = message.text.split()
-    if len(args) != 2:
-        bot.send_message(chat_id, "⚠️ TC Kimlik Numarası girin:\n/adres 11111111110", parse_mode="Markdown")
-        return
-    tc = args[1]
-    url = f'http://api.hexnox.pro/sowixapi/adres.php?tc={tc}'
-    try:
-        resp = requests.get(url)
-        member = resp.json()
-        if member.get("success") and "data" in member:
-            m = member["data"]
-            msg = (
-                f"TC: {m.get('KimlikNo', '-')}\n"
-                f"Ad Soyad: {m.get('AdSoyad', '-')}\n"
-                f"Adres: {m.get('Ikametgah', '-')}\n"
-            )
-            bot.send_message(chat_id, msg)
-        else:
-            bot.send_message(chat_id, "Adres bulunamadı.")
-    except Exception as e:
-        bot.send_message(chat_id, f"Hata: {e}")
 
 # /tcpro
 @bot.message_handler(commands=['tcpro'])
