@@ -386,12 +386,12 @@ def handle_arama(message):
     except Exception:
         bot.send_message(message.chat.id, "⚠️ Lütfen geçerli bir telefon numarası girin. Örnek: /arama +905555555555", parse_mode="Markdown")
         
- def temiz_deger(val):
-    if val is None or str(val).strip() == "" or str(val).strip().lower() == "none":
-        return "Bilinmiyor"
-    return str(val)
+def send_long_message(chat_id, text, parse_mode=None):
+    max_len = 4096
+    for i in range(0, len(text), max_len):
+        bot.send_message(chat_id, text[i:i + max_len], parse_mode=parse_mode)
 
-@bot.message_handler(commands=['sorgu'])
+ @bot.message_handler(commands=['sorgu'])
 def kimlik_sorgu(message):
     try:
         chat_id = message.chat.id
@@ -442,17 +442,17 @@ def kimlik_sorgu(message):
         for person in result_list:
             formatted_message += (
                 f"╭━━━━━━━━━━━━━━\n"
-                f"┃➥ TC: {temiz_deger(person.get('TC'))}\n"
-                f"┃➥ AD: {temiz_deger(person.get('ADI'))}\n"
-                f"┃➥ SOYAD: {temiz_deger(person.get('SOYADI'))}\n"
-                f"┃➥ DOĞUM TARİHİ: {temiz_deger(person.get('DOGUMTARIHI'))}\n"
-                f"┃➥ İL: {temiz_deger(person.get('NUFUSIL'))}\n"
-                f"┃➥ İLÇE: {temiz_deger(person.get('NUFUSILCE'))}\n"
-                f"┃➥ ANNE ADI: {temiz_deger(person.get('ANNEADI'))}\n"
-                f"┃➥ ANNE TC: {temiz_deger(person.get('ANNETC'))}\n"
-                f"┃➥ BABA ADI: {temiz_deger(person.get('BABAADI'))}\n"
-                f"┃➥ BABA TC: {temiz_deger(person.get('BABATC'))}\n"
-                f"┃➥ UYRUK: {temiz_deger(person.get('UYRUK'))}\n"
+                f"┃➥ TC: {person.get('TC', 'Bilinmiyor')}\n"
+                f"┃➥ AD: {person.get('ADI', 'Bilinmiyor')}\n"
+                f"┃➥ SOYAD: {person.get('SOYADI', 'Bilinmiyor')}\n"
+                f"┃➥ DOĞUM TARİHİ: {person.get('DOGUMTARIHI', 'Bilinmiyor')}\n"
+                f"┃➥ İL: {person.get('NUFUSIL', 'Bilinmiyor')}\n"
+                f"┃➥ İLÇE: {person.get('NUFUSILCE', 'Bilinmiyor')}\n"
+                f"┃➥ ANNE ADI: {person.get('ANNEADI', 'Bilinmiyor')}\n"
+                f"┃➥ ANNE TC: {person.get('ANNETC', 'Bilinmiyor')}\n"
+                f"┃➥ BABA ADI: {person.get('BABAADI', 'Bilinmiyor')}\n"
+                f"┃➥ BABA TC: {person.get('BABATC', 'Bilinmiyor')}\n"
+                f"┃➥ UYRUK: {person.get('UYRUK', 'Bilinmiyor')}\n"
                 f"╰━━━━━━━━━━━━━━\n\n"
             )
 
@@ -468,7 +468,7 @@ def kimlik_sorgu(message):
             send_long_message(chat_id, formatted_message)
 
     except Exception as e:
-        bot.reply_to(message, f"⚠️ Bir hata oluştu: {str(e)}")       
+        bot.reply_to(message, f"⚠️ Bir hata oluştu: {str(e)}")
 
 # --- /ip --- #
 IP_REGEX = re.compile(r'^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$')
