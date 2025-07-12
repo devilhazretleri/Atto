@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.env
+.env.*
+*.db
+*.sqlite3
+mesaj_sesi.mp3
+site_index.html
