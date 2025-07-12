@@ -385,13 +385,18 @@ def handle_arama(message):
         last_usage[user_id] = datetime.now()
     except Exception:
         bot.send_message(message.chat.id, "⚠️ Lütfen geçerli bir telefon numarası girin. Örnek: /arama +905555555555", parse_mode="Markdown")
-        
+
+
+
 def send_long_message(chat_id, text, parse_mode=None):
     max_len = 4096
     for i in range(0, len(text), max_len):
         bot.send_message(chat_id, text[i:i + max_len], parse_mode=parse_mode)
 
- @bot.message_handler(commands=['sorgu'])
+
+
+
+@bot.message_handler(commands=['sorgu'])
 def kimlik_sorgu(message):
     try:
         chat_id = message.chat.id
@@ -469,6 +474,7 @@ def kimlik_sorgu(message):
 
     except Exception as e:
         bot.reply_to(message, f"⚠️ Bir hata oluştu: {str(e)}")
+
 
 # --- /ip --- #
 IP_REGEX = re.compile(r'^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$')
