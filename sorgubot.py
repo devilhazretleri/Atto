@@ -45,7 +45,7 @@ import os
 temp_log_storage = {}
 log_counter = 0
 
-TOKEN = "7436117955:AAGI2XAmBGzkH0M0NztXPZZQmmtBfDqt9jc1"
+TOKEN = "7436117955:AAGI2XAmBGzkH0M0NztXPZZQmmtBfDqt9jc"
 bot = telebot.TeleBot(TOKEN)
 
 # Kanal ve grup kontrolünü devre dışı bırak - test amaçlı
